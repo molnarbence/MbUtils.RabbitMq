@@ -18,11 +18,3 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Pack
-      run: | 
-        VERSION=$(echo ${GITHUB_REF##*/})
-        VERSION=$(echo $VERSION | sed -e 's/^v//')
-        dotnet pack -c Release -o ./packages -p:PackageVersion=$VERSION
-    - name: Push to NuGet
-      run: |
-        dotnet nuget push ./packages/**/*.nupkg -s https://api.nuget.org/v3/index.json -k secretkey --no-symbols=true
