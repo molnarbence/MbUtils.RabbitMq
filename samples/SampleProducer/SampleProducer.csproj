@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <IsPackable>False</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Producer\MbUtils.RabbitMq.Producer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MbUtils.Extensions.CommandLineUtils" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

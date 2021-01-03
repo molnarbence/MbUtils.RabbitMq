@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SampleConsumer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

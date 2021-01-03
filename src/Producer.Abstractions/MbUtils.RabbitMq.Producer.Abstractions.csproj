@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>RabbitMQ message producer abstractions</Title>
+    <Authors>molnarbence</Authors>
+    <Description>Abstraction layer of RabbitMQ message producer</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/molnarbence/MbUtils.RabbitMq</PackageProjectUrl>
+    <PackageTags>mbutils;rabbitmq;producer</PackageTags>
+    <RepositoryUrl>https://github.com/molnarbence/MbUtils.RabbitMq</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>
