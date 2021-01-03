@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/dotnet/sdk:5.0
@@ -19,3 +18,12 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    - name: Pack
+      run: | 
+        VERSION=$(echo ${GITHUB_REF##*/})
+        echo '1st:'
+        echo $VERSION
+        VERSION=$(echo $VERSION | sed -e 's/^v//')
+        echo '2nd:'
+        echo $VERSION
+        dotnet pack -c Release -o ./packages -p:PackageVersion=$VERSION
