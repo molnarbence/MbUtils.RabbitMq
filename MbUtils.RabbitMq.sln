@@ -12,7 +12,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9C92C6DD-2014-4420-A79B-E2B507AEF930}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
 		docker-compose.yml = docker-compose.yml
+		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MbUtils.RabbitMq.Producer.Abstractions", "src\Producer.Abstractions\MbUtils.RabbitMq.Producer.Abstractions.csproj", "{6C88DAC4-69C9-4688-9951-2E25C3069EF5}"
