@@ -1,28 +1,26 @@
-name: .NET
+name: Pack and publish
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
-  build:
+  pack_and_publish:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/dotnet/sdk:5.0
 
     steps:
     - uses: actions/checkout@v2
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
     - name: Pack
       run: | 
         VERSION=$(echo ${GITHUB_REF##*/})
         VERSION=$(echo $VERSION | sed -e 's/^v//')
         dotnet pack -c Release -o ./packages -p:PackageVersion=$VERSION
     - name: Push to NuGet
+      env:
+        API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: |
-        dotnet nuget push ./packages/**/*.nupkg -s https://api.nuget.org/v3/index.json -k secretkey --no-symbols=true
+        dotnet nuget push ./packages/**/*.nupkg -s https://api.nuget.org/v3/index.json -k $API_KEY --no-symbols=true
