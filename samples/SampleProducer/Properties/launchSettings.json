@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SampleProducer": {
+      "commandName": "Project",
+      "commandLineArgs": "produce"
+    }
+  }
+}
