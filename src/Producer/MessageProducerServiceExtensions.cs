@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.DependencyInjection
       {
          return services
             .AddSingleton<IMessageProducerFactory, RabbitMqProducerFactory>()
-            .AddTransient<IMessageProducer, RabbitMqProducer>()
             .Configure<RabbitMqConfiguration>(configuration.GetSection("RabbitMq"));
       }
    }
