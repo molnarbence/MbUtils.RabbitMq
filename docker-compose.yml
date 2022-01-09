@@ -6,3 +6,32 @@ services:
     ports:
         - "5672:5672"
         - "15672:15672"
+
+  producer:
+    container_name: producer
+    build:
+      dockerfile: ./samples/SampleProducer/Dockerfile
+    environment:
+      RabbitMq__HostName: "rabbitmq"
+    depends_on:
+      - rabbitmq
+
+  consumer:
+    container_name: consumer
+    build:
+      dockerfile: ./samples/SampleConsumer/Dockerfile
+    environment:
+      RabbitMq__HostName: "rabbitmq"
+    depends_on:
+      - rabbitmq
+
+  webconsumer:
+    container_name: webconsumer
+    build:
+      dockerfile: ./samples/SampleWebConsumer/Dockerfile
+    environment:
+      RabbitMq__HostName: "rabbitmq"
+    ports:
+      - "5000:80"
+    depends_on:
+      - rabbitmq

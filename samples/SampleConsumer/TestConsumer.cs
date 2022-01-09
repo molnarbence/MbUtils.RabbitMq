@@ -17,7 +17,7 @@ namespace SampleConsumer
       public Task OnMessageAsync(byte[] message)
       {
          var messageReceived = Encoding.UTF8.GetString(message);
-         _logger.LogInformation("Message received: '{0}'", messageReceived);
+         _logger.LogInformation("Message received: '{Message}'", messageReceived);
          return Task.CompletedTask;
       }
    }
