@@ -17,11 +17,16 @@ namespace MbUtils.RabbitMq.Consumer
       private readonly RabbitMqConfiguration _configuration;
       private readonly ILogger<ConsumerHostedService> _logger;
       private readonly IServiceProvider _serviceProvider;
+      private readonly IConsumerStatusManager _consumerStatus;
 
       private IConnection _connection;
       private IModel _channel;
 
-      public ConsumerHostedService(IOptions<RabbitMqConfiguration> configurationOptions, ILogger<ConsumerHostedService> logger, IServiceProvider serviceProvider)
+      public ConsumerHostedService(
+         IOptions<RabbitMqConfiguration> configurationOptions, 
+         ILogger<ConsumerHostedService> logger, 
+         IServiceProvider serviceProvider,
+         IConsumerStatusManager consumerStatus)
       {
          if (configurationOptions is null)
          {
@@ -31,6 +36,8 @@ namespace MbUtils.RabbitMq.Consumer
          _configuration = configurationOptions.Value;
          _logger = logger;
          _serviceProvider = serviceProvider;
+         _consumerStatus = consumerStatus;
+         _consumerStatus.Initialized(_configuration.HostName, _configuration.QueueName);
       }
 
       public override Task StartAsync(CancellationToken cancellationToken)
@@ -50,7 +57,8 @@ namespace MbUtils.RabbitMq.Consumer
                               autoDelete: false,
                               arguments: null);
          _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-         _logger.LogInformation("Queue [{0}] is waiting for messages on host [{1}]", _configuration.QueueName, _configuration.HostName);
+         _logger.LogInformation("Queue [{QueueName}] is waiting for messages on host [{HostName}]", _configuration.QueueName, _configuration.HostName);
+         _consumerStatus.StartedListening();
 
          return base.StartAsync(cancellationToken);
       }
@@ -75,7 +83,7 @@ namespace MbUtils.RabbitMq.Consumer
             }
             catch (Exception e)
             {
-               _logger.LogError(default, e, e.Message);
+               _logger.LogError(default, e, "Exception message: {ExceptionMessage}", e.Message);
             }
          };
 
@@ -89,6 +97,7 @@ namespace MbUtils.RabbitMq.Consumer
          await base.StopAsync(cancellationToken);
          _connection.Close();
          _logger.LogInformation("RabbitMQ connection is closed.");
+         _consumerStatus.StoppedListening();
       }
 
       private IConnection CreateConnectionWithRetry(ConnectionFactory connectionFactory)
@@ -104,7 +113,8 @@ namespace MbUtils.RabbitMq.Consumer
             catch (BrokerUnreachableException)
             {
                retryAttempts++;
-               _logger.LogError("Broker was unreachable. Retrying in 5 seconds. [Retry attempts: {0}]", retryAttempts);
+               _logger.LogError("Broker was unreachable. Retrying in 5 seconds. [Retry attempts: {RetryAttempts}]", retryAttempts);
+               _consumerStatus.BrokerUnreachable(retryAttempts);
                Thread.Sleep(5000);
             }
          }
@@ -112,11 +122,12 @@ namespace MbUtils.RabbitMq.Consumer
          return ret;
       }
 
-      private Task ConsumeAsync(byte[] message)
+      private async Task ConsumeAsync(byte[] message)
       {
+         _consumerStatus.IncrementMessageCount();
          using var scope = _serviceProvider.CreateScope();
          var messageConsumer = scope.ServiceProvider.GetService<IMessageConsumer>();
-         return messageConsumer.OnMessageAsync(message);
+         await messageConsumer.OnMessageAsync(message);
       }
    }
 }

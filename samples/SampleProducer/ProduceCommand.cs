@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MbUtils.RabbitMq.Producer;
@@ -13,24 +11,49 @@ namespace SampleProducer
    [HelpOption]
    public class ProduceCommand
    {
-      public int OnExecute(IMessageProducerFactory messageProducerFactory, IReporter reporter, IConsole console, ILogger<ProduceCommand> logger)
+      private readonly IConsole _console;
+      private readonly ILogger<ProduceCommand> _logger;
+      private readonly IMessageProducerFactory _messageProducerFactory;
+      private readonly IReporter _reporter;
+
+      public ProduceCommand(IConsole console, ILogger<ProduceCommand> logger, IMessageProducerFactory messageProducerFactory, IReporter reporter)
       {
-         console.WriteLine("Creating producer to queue 'test'.");
-         using var producer = messageProducerFactory.Create("test");
+         _console = console;
+         _logger = logger;
+         _messageProducerFactory = messageProducerFactory;
+         _reporter = reporter;
+      }
+      public async Task<int> OnExecuteAsync()
+      {
+         try
+         {
+            await SendTestMessageAsync("test");
+            await SendTestMessageAsync("test2");
+            return 0;
+         }
+         catch (Exception)
+         {
+            return 1;
+         }
+      }
+
+      private async Task SendTestMessageAsync(string queueName)
+      {
+         _console.WriteLine($"Creating producer to queue '{queueName}'.");
+         using var producer = await _messageProducerFactory.CreateAsync(queueName);
          try
          {
             var messageToSend = Encoding.UTF8.GetBytes("Hello world!");
 
             producer.Produce(messageToSend);
 
-            console.WriteLine("Message sent");
-            return 0;
+            _console.WriteLine("Message sent");
          }
          catch (Exception ex)
          {
-            reporter.Error(ex.Message);
-            logger.LogError(ex, nameof(OnExecute));
-            return 1;
+            _reporter.Error(ex.Message);
+            _logger.LogError(ex, nameof(OnExecuteAsync));
+            throw;
          }
       }
    }
