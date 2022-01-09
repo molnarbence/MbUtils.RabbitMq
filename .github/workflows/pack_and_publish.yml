@@ -1,4 +1,4 @@
-name: Pack and publish
+﻿name: Pack and publish
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
   pack_and_publish:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/dotnet/sdk:5.0
+      image: mcr.microsoft.com/dotnet/sdk:6.0
 
     steps:
     - uses: actions/checkout@v2
