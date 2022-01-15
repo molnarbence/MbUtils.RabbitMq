@@ -23,8 +23,8 @@ namespace MbUtils.RabbitMq.Consumer
       private IModel _channel;
 
       public ConsumerHostedService(
-         IOptions<RabbitMqConfiguration> configurationOptions, 
-         ILogger<ConsumerHostedService> logger, 
+         IOptions<RabbitMqConfiguration> configurationOptions,
+         ILogger<ConsumerHostedService> logger,
          IServiceProvider serviceProvider,
          IConsumerStatusManager consumerStatus)
       {
@@ -40,17 +40,20 @@ namespace MbUtils.RabbitMq.Consumer
          _consumerStatus.Initialized(_configuration.HostName, _configuration.QueueName);
       }
 
-      public override Task StartAsync(CancellationToken cancellationToken)
+      public override async Task StartAsync(CancellationToken cancellationToken)
       {
-         var connectionFactory = new ConnectionFactory 
-         { 
-            HostName = _configuration.HostName, 
-            DispatchConsumersAsync = true, 
-            AutomaticRecoveryEnabled = true 
+         var connectionFactory = new ConnectionFactory
+         {
+            HostName = _configuration.HostName,
+            DispatchConsumersAsync = true,
+            AutomaticRecoveryEnabled = true
          };
 
-         _connection = CreateConnectionWithRetry(connectionFactory);
+         _logger.LogInformation("Creating connection to host [{HostName}]", _configuration.HostName);
+         _connection = await CreateConnectionWithRetryAsync(connectionFactory);
          _channel = _connection.CreateModel();
+
+         _logger.LogInformation("Declaring queue [{QueueName}]", _configuration.QueueName);
          _channel.QueueDeclare(queue: _configuration.QueueName,
                               durable: true,
                               exclusive: false,
@@ -60,7 +63,7 @@ namespace MbUtils.RabbitMq.Consumer
          _logger.LogInformation("Queue [{QueueName}] is waiting for messages on host [{HostName}]", _configuration.QueueName, _configuration.HostName);
          _consumerStatus.StartedListening();
 
-         return base.StartAsync(cancellationToken);
+         await base.StartAsync(cancellationToken);
       }
 
       protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -95,12 +98,15 @@ namespace MbUtils.RabbitMq.Consumer
       public override async Task StopAsync(CancellationToken cancellationToken)
       {
          await base.StopAsync(cancellationToken);
+
+         _logger.LogInformation("Closing RabbitMQ connection.");
          _connection.Close();
          _logger.LogInformation("RabbitMQ connection is closed.");
+
          _consumerStatus.StoppedListening();
       }
 
-      private IConnection CreateConnectionWithRetry(ConnectionFactory connectionFactory)
+      private async Task<IConnection> CreateConnectionWithRetryAsync(ConnectionFactory connectionFactory)
       {
          var ret = default(IConnection);
          var retryAttempts = 0;
@@ -114,9 +120,9 @@ namespace MbUtils.RabbitMq.Consumer
             {
                retryAttempts++;
                _logger.LogError("Broker was unreachable. Retrying in 5 seconds. [Retry attempts: {RetryAttempts}]", retryAttempts);
-               _consumerStatus.BrokerUnreachable(retryAttempts);
-               Thread.Sleep(5000);
+               _consumerStatus.BrokerUnreachable(retryAttempts);               
             }
+            if (ret == null) await Task.Delay(5000);
          }
 
          return ret;
