@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace MbUtils.RabbitMq.Consumer
+namespace MbUtils.RabbitMq.Consumer;
+
+public interface IMessageConsumer
 {
-   public interface IMessageConsumer
-   {
-      Task OnMessageAsync(byte[] message);
-   }
+   Task OnMessageAsync(byte[] message);
 }

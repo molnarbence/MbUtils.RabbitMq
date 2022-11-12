@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace MbUtils.RabbitMq.Producer
+namespace MbUtils.RabbitMq.Producer;
+
+public interface IMessageProducerFactory : IDisposable
 {
-   public interface IMessageProducerFactory : IDisposable
-   {
-      Task<IMessageProducer> CreateAsync(string queueName);
-   }
+   Task<IMessageProducer> CreateAsync(string queueName);
 }

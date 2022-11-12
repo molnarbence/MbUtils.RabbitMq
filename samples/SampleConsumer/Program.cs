@@ -2,14 +2,13 @@
 using MbUtils.RabbitMq.Consumer;
 using Microsoft.Extensions.Hosting;
 
-namespace SampleConsumer
+namespace SampleConsumer;
+
+class Program
 {
-   class Program
+   static async Task Main(string[] args)
    {
-      static async Task Main(string[] args)
-      {
-         var hostBuilder = new ConsumerHostBuilder(args).AddRabbitMqConsumer<TestConsumer>();
-         await hostBuilder.RunConsoleAsync();
-      }
+      var hostBuilder = new ConsumerHostBuilder(args).AddRabbitMqConsumer<TestConsumer>();
+      await hostBuilder.RunConsoleAsync();
    }
 }
