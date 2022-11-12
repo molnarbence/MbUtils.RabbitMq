@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace MbUtils.RabbitMq.Producer
+namespace MbUtils.RabbitMq.Producer;
+
+public interface IMessageProducer : IDisposable
 {
-   public interface IMessageProducer : IDisposable
-   {
-      void Produce(byte[] message);
-   }
+   void Produce(byte[] message);
 }

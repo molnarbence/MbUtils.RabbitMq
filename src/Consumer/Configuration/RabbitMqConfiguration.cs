@@ -1,8 +1,7 @@
-﻿namespace MbUtils.RabbitMq.Consumer.Configuration
+﻿namespace MbUtils.RabbitMq.Consumer.Configuration;
+
+public class RabbitMqConfiguration
 {
-   public class RabbitMqConfiguration
-   {
-      public string HostName { get; set; }
-      public string QueueName { get; set; }
-   }
+   public string HostName { get; set; }
+   public string QueueName { get; set; }
 }

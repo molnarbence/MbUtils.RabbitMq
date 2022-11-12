@@ -1,7 +1,6 @@
-﻿namespace MbUtils.RabbitMq.Producer.Configuration
+﻿namespace MbUtils.RabbitMq.Producer.Configuration;
+
+public class RabbitMqConfiguration
 {
-   public class RabbitMqConfiguration
-   {
-      public string HostName { get; set; }
-   }
+   public string HostName { get; set; }
 }
