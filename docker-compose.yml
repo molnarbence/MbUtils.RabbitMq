@@ -16,15 +16,6 @@ services:
     depends_on:
       - rabbitmq
 
-  consumer:
-    container_name: consumer
-    build:
-      dockerfile: ./samples/SampleConsumer/Dockerfile
-    environment:
-      RabbitMq__HostName: "rabbitmq"
-    depends_on:
-      - rabbitmq
-
   webconsumer:
     container_name: webconsumer
     build:

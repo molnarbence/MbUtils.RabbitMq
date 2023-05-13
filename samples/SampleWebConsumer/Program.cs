@@ -4,7 +4,7 @@ using SampleWebConsumer;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRabbitMqConsumer<TestConsumer>(builder.Configuration);
+builder.Services.AddRabbitMqConsumer<TestConsumer>(builder.Configuration.GetSection("RabbitMq"));
 
 var app = builder.Build();
 

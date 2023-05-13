@@ -22,8 +22,7 @@ internal class RabbitMqProducerFactory : IMessageProducerFactory
 
    public async Task<IMessageProducer> CreateAsync(string queueName)
    {
-      if (_connection == null)
-         _connection = await CreateConnectionAsync();
+      _connection ??= await CreateConnectionAsync();
       return new RabbitMqProducer(_connection, queueName);
    }
 
