@@ -21,7 +21,8 @@ services:
     build:
       dockerfile: ./samples/SampleWebConsumer/Dockerfile
     environment:
-      RabbitMq__HostName: "rabbitmq"
+      TestConsumer__HostName: "rabbitmq"
+      TestConsumer2__HostName: "rabbitmq"
     ports:
       - "5000:80"
     depends_on:

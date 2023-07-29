@@ -6,10 +6,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class MessageProducerServiceExtensions
 {
-   public static IServiceCollection AddRabbitMqMessageProducer(this IServiceCollection services, IConfiguration configuration)
+   public static IServiceCollection AddRabbitMqMessageProducer(this IServiceCollection services, IConfigurationSection producerConfigurationSection)
    {
       return services
          .AddSingleton<IMessageProducerFactory, RabbitMqProducerFactory>()
-         .Configure<RabbitMqConfiguration>(configuration.GetSection("RabbitMq"));
+         .Configure<RabbitMqConfiguration>(producerConfigurationSection);
    }
 }

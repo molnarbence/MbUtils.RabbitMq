@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MbUtils.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +15,7 @@ public class Program
 
       wrapper.HostBuilder.ConfigureServices((hostBuilderContext, services) => services
          .AddSingleton<IReporter, ConsoleReporter>()
-         .AddRabbitMqMessageProducer(hostBuilderContext.Configuration)
+         .AddRabbitMqMessageProducer(hostBuilderContext.Configuration.GetSection("RabbitMq"))
          );
 
       return wrapper.ExecuteAsync();

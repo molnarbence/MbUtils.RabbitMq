@@ -12,10 +12,10 @@ using RabbitMQ.Client.Exceptions;
 
 namespace MbUtils.RabbitMq.Consumer;
 
-internal class ConsumerHostedService : BackgroundService
+internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsumer : IMessageConsumer
 {
-   private readonly RabbitMqConfiguration _configuration;
-   private readonly ILogger<ConsumerHostedService> _logger;
+   private readonly RabbitMqConfiguration<TConsumer> _configuration;
+   private readonly ILogger<ConsumerHostedService<TConsumer>> _logger;
    private readonly IServiceProvider _serviceProvider;
    private readonly IConsumerStatusManager _consumerStatus;
 
@@ -23,8 +23,8 @@ internal class ConsumerHostedService : BackgroundService
    private IModel _channel;
 
    public ConsumerHostedService(
-      IOptions<RabbitMqConfiguration> configurationOptions,
-      ILogger<ConsumerHostedService> logger,
+      IOptions<RabbitMqConfiguration<TConsumer>> configurationOptions,
+      ILogger<ConsumerHostedService<TConsumer>> logger,
       IServiceProvider serviceProvider,
       IConsumerStatusManager consumerStatus)
    {
@@ -132,7 +132,7 @@ internal class ConsumerHostedService : BackgroundService
    {
       _consumerStatus.IncrementMessageCount();
       using var scope = _serviceProvider.CreateScope();
-      var messageConsumer = scope.ServiceProvider.GetService<IMessageConsumer>();
+      var messageConsumer = scope.ServiceProvider.GetService<TConsumer>();
       await messageConsumer.OnMessageAsync(message);
    }
 }

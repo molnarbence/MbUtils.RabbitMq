@@ -8,9 +8,12 @@ namespace Microsoft.Extensions.Hosting;
 public static class ConsumerHostedServiceExtensions
 {
    public static IServiceCollection AddRabbitMqConsumer<TConsumer>(this IServiceCollection services, IConfigurationSection consumerConfigurationSection) where TConsumer : class, IMessageConsumer
-      => services
-            .Configure<RabbitMqConfiguration>(consumerConfigurationSection)
-            .AddScoped<IMessageConsumer, TConsumer>()
+   {
+      services
+            .Configure<RabbitMqConfiguration<TConsumer>>(consumerConfigurationSection)
+            .AddScoped<TConsumer>()
             .AddSingleton<IConsumerStatusManager, ConsumerStatusManager>()
-            .AddHostedService<ConsumerHostedService>();
+            .AddHostedService<ConsumerHostedService<TConsumer>>();
+      return services;
+   }
 }

@@ -27,8 +27,8 @@ public class ProduceCommand
    {
       try
       {
-         await SendTestMessageAsync("console", "message for console");
          await SendTestMessageAsync("web", "message for web");
+         await SendTestMessageAsync("web2", "message for web2");
          return 0;
       }
       catch (Exception)
