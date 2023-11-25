@@ -3,14 +3,9 @@ using MbUtils.RabbitMq.Consumer;
 
 namespace SampleWebConsumer;
 
-public class TestConsumer : IMessageConsumer
+public class TestConsumer(ILogger<TestConsumer> logger) : IMessageConsumer
 {
-   private readonly ILogger<TestConsumer> _logger;
-
-   public TestConsumer(ILogger<TestConsumer> logger)
-   {
-      _logger = logger;
-   }
+   private readonly ILogger<TestConsumer> _logger = logger;
 
    public Task OnMessageAsync(byte[] message)
    {

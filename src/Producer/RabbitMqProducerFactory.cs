@@ -7,18 +7,13 @@ using RabbitMQ.Client;
 
 namespace MbUtils.RabbitMq.Producer;
 
-internal class RabbitMqProducerFactory : IMessageProducerFactory
+internal class RabbitMqProducerFactory(
+   IOptions<RabbitMqConfiguration> configurationOptions, 
+   ILogger<RabbitMqProducerFactory> logger) : IMessageProducerFactory
 {
-   private readonly ConnectionFactory _connectionFactory;
-   private readonly ILogger<RabbitMqProducerFactory> _logger;
+   private readonly ConnectionFactory _connectionFactory = new() { HostName = configurationOptions.Value.HostName };
+   private readonly ILogger<RabbitMqProducerFactory> _logger = logger;
    private IConnection _connection;
-
-   public RabbitMqProducerFactory(IOptions<RabbitMqConfiguration> configurationOptions, ILogger<RabbitMqProducerFactory> logger)
-   {
-      var config = configurationOptions.Value;
-      _connectionFactory = new ConnectionFactory() { HostName = config.HostName };
-      _logger = logger;
-   }
 
    public async Task<IMessageProducer> CreateAsync(string queueName)
    {

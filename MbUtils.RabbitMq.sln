@@ -5,14 +5,14 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F8B184AE-B984-42D2-A634-B2FC3039D275}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F3E2D1FB-AF85-4EBE-827C-B6F6B25A91B8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MbUtils.RabbitMq.Consumer", "src\Consumer\MbUtils.RabbitMq.Consumer.csproj", "{6BD0BCDD-6ACE-4BEC-B19C-7B98A83A8E1D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9C92C6DD-2014-4420-A79B-E2B507AEF930}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 		docker-compose.yml = docker-compose.yml
 		LICENSE = LICENSE
 		README.md = README.md

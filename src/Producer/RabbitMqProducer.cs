@@ -31,7 +31,7 @@ internal class RabbitMqProducer : IMessageProducer
 
    public void Produce(byte[] message)
    {
-      _channel.BasicPublish(exchange: "",
+      _channel.BasicPublish(exchange: string.Empty,
                            routingKey: _queueName,
                            basicProperties: _basicProperties,
                            body: message);

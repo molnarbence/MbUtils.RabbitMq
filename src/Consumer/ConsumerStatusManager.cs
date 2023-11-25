@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MbUtils.RabbitMq.Consumer;
+﻿namespace MbUtils.RabbitMq.Consumer;
 
 internal class ConsumerStatusManager : IConsumerStatusManager
 {
