@@ -9,20 +9,13 @@ namespace SampleProducer;
 
 [Command("produce")]
 [HelpOption]
-public class ProduceCommand
+public class ProduceCommand(IConsole console, ILogger<ProduceCommand> logger, IMessageProducerFactory messageProducerFactory, IReporter reporter)
 {
-   private readonly IConsole _console;
-   private readonly ILogger<ProduceCommand> _logger;
-   private readonly IMessageProducerFactory _messageProducerFactory;
-   private readonly IReporter _reporter;
+   private readonly IConsole _console = console;
+   private readonly ILogger<ProduceCommand> _logger = logger;
+   private readonly IMessageProducerFactory _messageProducerFactory = messageProducerFactory;
+   private readonly IReporter _reporter = reporter;
 
-   public ProduceCommand(IConsole console, ILogger<ProduceCommand> logger, IMessageProducerFactory messageProducerFactory, IReporter reporter)
-   {
-      _console = console;
-      _logger = logger;
-      _messageProducerFactory = messageProducerFactory;
-      _reporter = reporter;
-   }
    public async Task<int> OnExecuteAsync()
    {
       try

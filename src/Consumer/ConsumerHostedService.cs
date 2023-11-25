@@ -28,10 +28,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
       IServiceProvider serviceProvider,
       IConsumerStatusManager consumerStatus)
    {
-      if (configurationOptions is null)
-      {
-         throw new ArgumentNullException(nameof(configurationOptions));
-      }
+      ArgumentNullException.ThrowIfNull(configurationOptions);
 
       _configuration = configurationOptions.Value;
       _logger = logger;
