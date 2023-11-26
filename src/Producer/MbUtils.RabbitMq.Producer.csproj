@@ -13,6 +13,7 @@
     <PackageTags>mbutils;rabbitmq;producer</PackageTags>
     <RepositoryUrl>https://github.com/molnarbence/MbUtils.RabbitMq</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
