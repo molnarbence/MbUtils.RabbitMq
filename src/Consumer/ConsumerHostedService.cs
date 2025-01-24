@@ -20,7 +20,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
    private readonly IConsumerStatusManager _consumerStatus;
 
    private IConnection _connection;
-   private IModel _channel;
+   private IChannel _channel;
 
    public ConsumerHostedService(
       IOptions<RabbitMqConfiguration<TConsumer>> configurationOptions,
@@ -42,21 +42,20 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
       var connectionFactory = new ConnectionFactory
       {
          HostName = _configuration.HostName,
-         DispatchConsumersAsync = true,
          AutomaticRecoveryEnabled = true
       };
 
       _logger.LogInformation("Creating connection to host [{HostName}]", _configuration.HostName);
-      _connection = await CreateConnectionWithRetryAsync(connectionFactory);
-      _channel = _connection.CreateModel();
+      _connection = await CreateConnectionWithRetryAsync(connectionFactory, cancellationToken);
+      _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
       _logger.LogInformation("Declaring queue [{QueueName}]", _configuration.QueueName);
-      _channel.QueueDeclare(queue: _configuration.QueueName,
+      await _channel.QueueDeclareAsync(queue: _configuration.QueueName,
                            durable: true,
                            exclusive: false,
                            autoDelete: false,
-                           arguments: null);
-      _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                           arguments: null, cancellationToken: cancellationToken);
+      await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false, cancellationToken: cancellationToken);
       _logger.LogInformation("Queue [{QueueName}] is waiting for messages on host [{HostName}]", _configuration.QueueName, _configuration.HostName);
       _consumerStatus.StartedListening();
 
@@ -69,13 +68,13 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
 
       var consumer = new AsyncEventingBasicConsumer(_channel);
 
-      consumer.Received += async (bc, ea) =>
+      consumer.ReceivedAsync += async (bc, ea) =>
       {
          try
          {
             await ConsumeAsync(ea.Body.ToArray());
 
-            _channel.BasicAck(ea.DeliveryTag, false);
+            await _channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
          }
          catch (AlreadyClosedException)
          {
@@ -87,7 +86,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
          }
       };
 
-      _channel.BasicConsume(queue: _configuration.QueueName, autoAck: false, consumer: consumer);
+      await _channel.BasicConsumeAsync(queue: _configuration.QueueName, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
 
       await Task.CompletedTask;
    }
@@ -97,13 +96,13 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
       await base.StopAsync(cancellationToken);
 
       _logger.LogInformation("Closing RabbitMQ connection.");
-      _connection.Close();
+      await _connection.CloseAsync(cancellationToken: cancellationToken);
       _logger.LogInformation("RabbitMQ connection is closed.");
 
       _consumerStatus.StoppedListening();
    }
 
-   private async Task<IConnection> CreateConnectionWithRetryAsync(ConnectionFactory connectionFactory)
+   private async Task<IConnection> CreateConnectionWithRetryAsync(ConnectionFactory connectionFactory, CancellationToken cancellationToken = default)
    {
       var ret = default(IConnection);
       var retryAttempts = 0;
@@ -111,7 +110,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
       {
          try
          {
-            ret = connectionFactory.CreateConnection();
+            ret = await connectionFactory.CreateConnectionAsync(cancellationToken);
          }
          catch (BrokerUnreachableException)
          {
@@ -119,7 +118,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
             _logger.LogError("Broker was unreachable. Retrying in 5 seconds. [Retry attempts: {RetryAttempts}]", retryAttempts);
             _consumerStatus.BrokerUnreachable(retryAttempts);               
          }
-         if (ret == null) await Task.Delay(5000);
+         if (ret == null) await Task.Delay(5000, cancellationToken);
       }
 
       return ret;
@@ -129,7 +128,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
    {
       _consumerStatus.IncrementMessageCount();
       using var scope = _serviceProvider.CreateScope();
-      var messageConsumer = scope.ServiceProvider.GetService<TConsumer>();
+      var messageConsumer = scope.ServiceProvider.GetRequiredService<TConsumer>();
       await messageConsumer.OnMessageAsync(message);
    }
 }

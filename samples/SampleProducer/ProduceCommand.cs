@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using MbUtils.RabbitMq.Producer;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -11,11 +9,6 @@ namespace SampleProducer;
 [HelpOption]
 public class ProduceCommand(IConsole console, ILogger<ProduceCommand> logger, IMessageProducerFactory messageProducerFactory, IReporter reporter)
 {
-   private readonly IConsole _console = console;
-   private readonly ILogger<ProduceCommand> _logger = logger;
-   private readonly IMessageProducerFactory _messageProducerFactory = messageProducerFactory;
-   private readonly IReporter _reporter = reporter;
-
    public async Task<int> OnExecuteAsync()
    {
       try
@@ -32,20 +25,20 @@ public class ProduceCommand(IConsole console, ILogger<ProduceCommand> logger, IM
 
    private async Task SendTestMessageAsync(string queueName, string textMessage)
    {
-      _console.WriteLine($"Creating producer to queue '{queueName}'.");
-      using var producer = await _messageProducerFactory.CreateAsync(queueName);
+      console.WriteLine($"Creating producer to queue '{queueName}'.");
+      var producer = await messageProducerFactory.CreateAsync(queueName);
       try
       {
          var messageToSend = Encoding.UTF8.GetBytes(textMessage);
 
-         producer.Produce(messageToSend);
+         await producer.ProduceAsync(messageToSend);
 
-         _console.WriteLine("Message sent");
+         console.WriteLine("Message sent");
       }
       catch (Exception ex)
       {
-         _reporter.Error(ex.Message);
-         _logger.LogError(ex, nameof(OnExecuteAsync));
+         reporter.Error(ex.Message);
+         logger.LogError(ex, nameof(OnExecuteAsync));
          throw;
       }
    }

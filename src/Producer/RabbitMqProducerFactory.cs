@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using MbUtils.RabbitMq.Producer.Configuration;
+﻿using MbUtils.RabbitMq.Producer.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -12,18 +10,20 @@ internal class RabbitMqProducerFactory(
    ILogger<RabbitMqProducerFactory> logger) : IMessageProducerFactory
 {
    private readonly ConnectionFactory _connectionFactory = new() { HostName = configurationOptions.Value.HostName };
-   private readonly ILogger<RabbitMqProducerFactory> _logger = logger;
-   private IConnection _connection;
+   private IConnection? _connection;
+   private IChannel? _channel;
 
    public async Task<IMessageProducer> CreateAsync(string queueName)
    {
       _connection ??= await CreateConnectionAsync();
-      return new RabbitMqProducer(_connection, queueName);
+      _channel ??= await CreateChannelAsync(_connection, queueName);
+      return new RabbitMqProducer(_channel, queueName);
    }
 
    public void Dispose()
    {
-      _connection.Dispose();
+      _channel?.Dispose();
+      _connection?.Dispose();
       GC.SuppressFinalize(this);
    }
 
@@ -35,20 +35,36 @@ internal class RabbitMqProducerFactory(
       {
          try
          {
-            _logger.LogInformation("Connecting to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
-            connection = _connectionFactory.CreateConnection();
+            logger.LogInformation("Connecting to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
+            connection = await _connectionFactory.CreateConnectionAsync();
          }
-         catch (Exception)
+         catch
          {
+            // ignored
          }
-         if(connection == null)
+
+         if (connection != null)
          {
-            retryAttempts++;
-            _logger.LogError("Unable to connect to host '{HostName}'. Retrying in 3 seconds. [Retry attempts: {RetryAttempts}]", _connectionFactory.HostName, retryAttempts);
-            await Task.Delay(3000);
+            continue;
          }
+
+         retryAttempts++;
+         logger.LogError("Unable to connect to host '{HostName}'. Retrying in 3 seconds. [Retry attempts: {RetryAttempts}]", _connectionFactory.HostName, retryAttempts);
+         await Task.Delay(3000);
       }
-      _logger.LogInformation("Connected to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
+      logger.LogInformation("Connected to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
       return connection;
+   }
+   
+   private async Task<IChannel> CreateChannelAsync(IConnection connection, string queueName)
+   {
+      var channel = await connection.CreateChannelAsync();
+      await channel.QueueDeclareAsync(queue: queueName,
+         durable: true,
+         exclusive: false,
+         autoDelete: false,
+         arguments: null);
+
+      return channel;
    }
 }

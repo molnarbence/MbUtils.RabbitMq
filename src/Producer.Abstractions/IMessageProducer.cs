@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace MbUtils.RabbitMq.Producer;
 
-public interface IMessageProducer : IDisposable
+public interface IMessageProducer
 {
-   void Produce(byte[] message);
+   Task ProduceAsync(byte[] message);
 }
