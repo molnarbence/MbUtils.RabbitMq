@@ -56,7 +56,7 @@ internal class RabbitMqProducerFactory(
       return connection;
    }
    
-   private async Task<IChannel> CreateChannelAsync(IConnection connection, string queueName)
+   private static async Task<IChannel> CreateChannelAsync(IConnection connection, string queueName)
    {
       var channel = await connection.CreateChannelAsync();
       await channel.QueueDeclareAsync(queue: queueName,

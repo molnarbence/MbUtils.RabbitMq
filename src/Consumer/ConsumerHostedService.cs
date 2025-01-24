@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MbUtils.RabbitMq.Consumer.Configuration;
+﻿using MbUtils.RabbitMq.Consumer.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,16 +11,16 @@ namespace MbUtils.RabbitMq.Consumer;
 
 internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsumer : IMessageConsumer
 {
-   private readonly RabbitMqConfiguration<TConsumer> _configuration;
+   private readonly RabbitMqConfiguration _configuration;
    private readonly ILogger<ConsumerHostedService<TConsumer>> _logger;
    private readonly IServiceProvider _serviceProvider;
    private readonly IConsumerStatusManager _consumerStatus;
 
-   private IConnection _connection;
-   private IChannel _channel;
+   private IConnection? _connection;
+   private IChannel? _channel;
 
    public ConsumerHostedService(
-      IOptions<RabbitMqConfiguration<TConsumer>> configurationOptions,
+      IOptions<RabbitMqConfiguration> configurationOptions,
       ILogger<ConsumerHostedService<TConsumer>> logger,
       IServiceProvider serviceProvider,
       IConsumerStatusManager consumerStatus)
@@ -64,11 +61,12 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
 
    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
    {
+      if(_channel is null) throw new InvalidOperationException("Channel is not initialized.");
       stoppingToken.ThrowIfCancellationRequested();
 
       var consumer = new AsyncEventingBasicConsumer(_channel);
 
-      consumer.ReceivedAsync += async (bc, ea) =>
+      consumer.ReceivedAsync += async (_, ea) =>
       {
          try
          {
@@ -95,10 +93,13 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
    {
       await base.StopAsync(cancellationToken);
 
-      _logger.LogInformation("Closing RabbitMQ connection.");
-      await _connection.CloseAsync(cancellationToken: cancellationToken);
-      _logger.LogInformation("RabbitMQ connection is closed.");
-
+      if (_connection is not null)
+      {
+         _logger.LogInformation("Closing RabbitMQ connection.");
+         await _connection.CloseAsync(cancellationToken: cancellationToken);
+         _logger.LogInformation("RabbitMQ connection is closed.");
+      }
+      
       _consumerStatus.StoppedListening();
    }
 

@@ -2,5 +2,5 @@
 
 public class RabbitMqConfiguration
 {
-   public string HostName { get; set; }
+   public string HostName { get; init; } = string.Empty;
 }

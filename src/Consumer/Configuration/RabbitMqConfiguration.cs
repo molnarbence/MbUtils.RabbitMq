@@ -1,7 +1,7 @@
 ﻿namespace MbUtils.RabbitMq.Consumer.Configuration;
 
-public class RabbitMqConfiguration<TConsumer> where TConsumer : IMessageConsumer
+public class RabbitMqConfiguration
 {
-   public string HostName { get; set; }
-   public string QueueName { get; set; }
+   public string HostName { get; init; } = string.Empty;
+   public string QueueName { get; init; } = string.Empty;
 }
