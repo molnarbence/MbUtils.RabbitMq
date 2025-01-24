@@ -9,11 +9,12 @@ on:
 jobs:
   pack_and_publish:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:8.0
 
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
     - name: Pack
       run: | 
         VERSION=$(echo ${GITHUB_REF##*/})
