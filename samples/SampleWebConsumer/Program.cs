@@ -6,8 +6,8 @@ var config = builder.Configuration;
 
 // Add services to the container.
 builder.Services
-   .AddRabbitMqConsumer<TestConsumer>(builder.Configuration.GetSection(nameof(TestConsumer)))
-   .AddRabbitMqConsumer<TestConsumer2>(builder.Configuration.GetSection(nameof(TestConsumer2)));
+   .AddRabbitMqConsumer<TestConsumer>(config.GetSection(nameof(TestConsumer)))
+   .AddRabbitMqConsumer<TestConsumer2>(config.GetSection(nameof(TestConsumer2)));
 
 var app = builder.Build();
 

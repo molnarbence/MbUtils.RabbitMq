@@ -10,19 +10,31 @@ internal class RabbitMqProducerFactory(
    ILogger<RabbitMqProducerFactory> logger) : IMessageProducerFactory
 {
    private readonly ConnectionFactory _connectionFactory = new() { HostName = configurationOptions.Value.HostName };
+   private readonly Dictionary<string, RabbitMqProducer> _producers = new();
    private IConnection? _connection;
-   private IChannel? _channel;
+   
 
    public async Task<IMessageProducer> CreateAsync(string queueName)
    {
       _connection ??= await CreateConnectionAsync();
-      _channel ??= await CreateChannelAsync(_connection, queueName);
-      return new RabbitMqProducer(_channel, queueName);
+      
+      if (_producers.TryGetValue(queueName, out var producer))
+      {
+         return producer;
+      }
+
+      var newProducer = new RabbitMqProducer(_connection, queueName);
+      _producers.Add(queueName, newProducer);
+      return newProducer;
    }
 
    public void Dispose()
    {
-      _channel?.Dispose();
+      foreach (var (_, producer) in _producers)
+      {
+         producer.Dispose();
+      }
+      
       _connection?.Dispose();
       GC.SuppressFinalize(this);
    }
@@ -54,17 +66,5 @@ internal class RabbitMqProducerFactory(
       }
       logger.LogInformation("Connected to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
       return connection;
-   }
-   
-   private static async Task<IChannel> CreateChannelAsync(IConnection connection, string queueName)
-   {
-      var channel = await connection.CreateChannelAsync();
-      await channel.QueueDeclareAsync(queue: queueName,
-         durable: true,
-         exclusive: false,
-         autoDelete: false,
-         arguments: null);
-
-      return channel;
    }
 }

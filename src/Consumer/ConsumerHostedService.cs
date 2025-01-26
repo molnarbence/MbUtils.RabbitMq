@@ -11,7 +11,7 @@ namespace MbUtils.RabbitMq.Consumer;
 
 internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsumer : IMessageConsumer
 {
-   private readonly RabbitMqConfiguration _configuration;
+   private readonly RabbitMqConfiguration<TConsumer> _configuration;
    private readonly ILogger<ConsumerHostedService<TConsumer>> _logger;
    private readonly IServiceProvider _serviceProvider;
    private readonly IConsumerStatusManager _consumerStatus;
@@ -20,7 +20,7 @@ internal class ConsumerHostedService<TConsumer> : BackgroundService where TConsu
    private IChannel? _channel;
 
    public ConsumerHostedService(
-      IOptions<RabbitMqConfiguration> configurationOptions,
+      IOptions<RabbitMqConfiguration<TConsumer>> configurationOptions,
       ILogger<ConsumerHostedService<TConsumer>> logger,
       IServiceProvider serviceProvider,
       IConsumerStatusManager consumerStatus)
