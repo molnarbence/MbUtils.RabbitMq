@@ -7,16 +7,20 @@ namespace Microsoft.Extensions.Hosting;
 
 public static class ConsumerHostedServiceExtensions
 {
-   public static IServiceCollection AddRabbitMqConsumer<TConsumer>(this IServiceCollection services, IConfiguration consumerConfiguration) where TConsumer : class, IMessageConsumer
+   public static IHostApplicationBuilder AddRabbitMqConsumer<TConsumer>(this IHostApplicationBuilder builder, IConfiguration consumerConfiguration, string connectionName) where TConsumer : class, IMessageConsumer
    {
-      services.AddOptions<RabbitMqConfiguration<TConsumer>>()
+      builder.AddRabbitMQClient(connectionName, configureConnectionFactory: static factory =>
+      {
+         factory.DispatchConsumersAsync = true;
+         factory.AutomaticRecoveryEnabled = true;
+      });
+      builder.Services.AddOptions<RabbitMqConfiguration<TConsumer>>()
          .Bind(consumerConfiguration);
       
-      services
+      builder.Services
          .AddScoped<TConsumer>()
-         .AddSingleton<IConsumerStatusManager, ConsumerStatusManager>()
          .AddHostedService<ConsumerHostedService<TConsumer>>();
 
-      return services;
+      return builder;
    }
 }

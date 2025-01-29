@@ -5,5 +5,5 @@ namespace MbUtils.RabbitMq.Producer;
 
 public interface IMessageProducerFactory : IDisposable
 {
-   Task<IMessageProducer> CreateAsync(string queueName);
+   IMessageProducer Create(string queueName);
 }

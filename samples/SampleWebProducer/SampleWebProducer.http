@@ -1,0 +1,11 @@
+@SampleWebProducer_HostAddress = http://localhost:5215
+
+GET {{SampleWebProducer_HostAddress}}/produce/web1/hello
+Accept: application/json
+
+###
+
+GET {{SampleWebProducer_HostAddress}}/produce/web2/world
+Accept: application/json
+
+###

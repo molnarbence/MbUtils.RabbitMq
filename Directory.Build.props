@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
-    <DotNetTargetFramework>net9.0</DotNetTargetFramework>
+      <TargetFramework>net9.0</TargetFramework>
+      <Nullable>enable</Nullable>
+      <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 </Project>

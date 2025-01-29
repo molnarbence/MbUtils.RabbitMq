@@ -5,5 +5,5 @@ namespace MbUtils.RabbitMq.Producer;
 
 public interface IMessageProducer
 {
-   Task ProduceAsync(byte[] message);
+   void Produce(byte[] message);
 }

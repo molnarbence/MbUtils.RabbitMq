@@ -1,15 +1,18 @@
 ﻿using MbUtils.RabbitMq.Producer;
 using MbUtils.RabbitMq.Producer.Configuration;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class MessageProducerServiceExtensions
 {
-   public static IServiceCollection AddRabbitMqMessageProducer(this IServiceCollection services, IConfigurationSection producerConfigurationSection)
+   public static IHostApplicationBuilder AddRabbitMqMessageProducer(this IHostApplicationBuilder builder, string connectionName)
    {
-      return services
-         .AddSingleton<IMessageProducerFactory, RabbitMqProducerFactory>()
-         .Configure<RabbitMqConfiguration>(producerConfigurationSection);
+      builder.AddRabbitMQClient(connectionName);
+
+      builder.Services.AddSingleton<IMessageProducerFactory, RabbitMqProducerFactory>();
+
+      return builder;
    }
 }

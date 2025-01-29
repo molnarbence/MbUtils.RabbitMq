@@ -6,24 +6,28 @@ using RabbitMQ.Client;
 namespace MbUtils.RabbitMq.Producer;
 
 internal class RabbitMqProducerFactory(
-   IOptions<RabbitMqConfiguration> configurationOptions, 
-   ILogger<RabbitMqProducerFactory> logger) : IMessageProducerFactory
+   IConnection connection) : IMessageProducerFactory
 {
-   private readonly ConnectionFactory _connectionFactory = new() { HostName = configurationOptions.Value.HostName };
    private readonly Dictionary<string, RabbitMqProducer> _producers = new();
-   private IConnection? _connection;
-   
 
-   public async Task<IMessageProducer> CreateAsync(string queueName)
-   {
-      _connection ??= await CreateConnectionAsync();
-      
+   public IMessageProducer Create(string queueName)
+   {  
       if (_producers.TryGetValue(queueName, out var producer))
       {
          return producer;
       }
+      
+      var channel = connection.CreateModel();
+      channel.QueueDeclare(queue: queueName,
+         durable: true,
+         exclusive: false,
+         autoDelete: false,
+         arguments: null);
 
-      var newProducer = new RabbitMqProducer(_connection, queueName);
+      var basicProperties = channel.CreateBasicProperties();
+      basicProperties.Persistent = true;
+
+      var newProducer = new RabbitMqProducer(channel, basicProperties, queueName);
       _producers.Add(queueName, newProducer);
       return newProducer;
    }
@@ -34,37 +38,5 @@ internal class RabbitMqProducerFactory(
       {
          producer.Dispose();
       }
-      
-      _connection?.Dispose();
-      GC.SuppressFinalize(this);
-   }
-
-   private async Task<IConnection> CreateConnectionAsync()
-   {
-      var retryAttempts = 0;
-      var connection = default(IConnection);
-      while(connection == null)
-      {
-         try
-         {
-            logger.LogInformation("Connecting to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
-            connection = await _connectionFactory.CreateConnectionAsync();
-         }
-         catch
-         {
-            // ignored
-         }
-
-         if (connection != null)
-         {
-            continue;
-         }
-
-         retryAttempts++;
-         logger.LogError("Unable to connect to host '{HostName}'. Retrying in 3 seconds. [Retry attempts: {RetryAttempts}]", _connectionFactory.HostName, retryAttempts);
-         await Task.Delay(3000);
-      }
-      logger.LogInformation("Connected to RabbitMQ host '{HostName}'", _connectionFactory.HostName);
-      return connection;
    }
 }
